@@ -4,14 +4,16 @@ function getRandomInt(min,max) {
 }
 
 class MapCell {
-	constructor({x,y},playerShipId=0,damaged=0){
-		this.playerShipId = playerShipId; // 0 - none; 1 - user; 2 - pc;
+	constructor({x,y},ship=0,damaged=0){
+		this.ship = ship; // 0 - none; 1 - user; 2 - pc;
 		this.damaged = damaged; // 0 - не тронутая, 1 - уже попали по этой точке
 		this.x = x;
 		this.y = y;
 	}
 
-	setShip(playerShipId){ this.playerShipId = playerShipId; }
+	setShip(ship){ this.ship = ship; }
+	setDamaged(d){ this.damaged = d; }
+	getShip() { return this.ship; }
 }
 
 // PlayerShip отвечает за разворот и размер корабля и состояние
@@ -34,7 +36,10 @@ class PlayerShip {
 	getCells() {return this.cells;}
 
 
-	addCell(cell){ this.cells.push(cell); }
+	addCell(cell){ 
+		cell.setShip(this);
+		this.cells.push(cell);
+	}
 	setToCells(cells){
 		this.cells = cells;
 		for(let i in cells){
@@ -193,12 +198,11 @@ export class PlayerMap {
 		this.mapSize = mapSize;
 		let map = [];
 		for (let i = 0; i < mapSize; i++) {
-			map[i] = [];
 			for (let j = 0; j < mapSize; j++) {
-				map[i][j] = new MapCell({x:i,y:j});
-
+				let cell = new MapCell({x:i,y:j});
+				map.push(cell);
 				let ship = ships.getCellShip({x:i,y:j});
-				if(ship){ ship.addCell(map[i][j]); }
+				if(ship){ ship.addCell(cell); }
 			}
 		}
 		this.map = map;
@@ -207,22 +211,59 @@ export class PlayerMap {
 	getMapSize() { return this.mapSize; }
 	getFreeMapStr() { return this.ships.getFreeMapStr(); }
 
-	setShipToMap(ship,{x,y}){
-		let sz = ship.getSize();
-		let hv = ship.getPosition();
-		let cells = [];
-		console.log('setShipToMap');
-		console.log(arguments);
-		
-		for(let i=0;i<sz;i++){
-			if(hv==1) x += i;
-			else y += i;
-			let cell = this.map[x][y];
-			console.log('cell  x:'+x+' y:'+y);
-			cells.push(cell);
-		}
-		ship.setToCells(cells);
+
+	getMapCells(){
+		let map = this.map;
+		return map;
 	}
+
+	getMapData() {return this;}
+	setMapData(p){
+		this.map = p.map;
+		this.mapSize = p.mapSize;
+		this.ships = p.ships;
+	}
+
+	setDamageToCell(x,y) {
+		let sz = this.mapSize;
+		let n = x*sz + y;
+		if(n<0) throw('Не верно заданы параметры x:'+x+', y:'+y+'  n<0!! n=='+n);
+		if(n>(sz*sz)) throw('Не верно заданы параметры x:'+x+', y:'+y+'  n>('+(sz*sz)+')!! n=='+n);
+		let cell = this.map[n];
+		cell.setDamaged(1);
+		console.log('setDamageToCell('+x+','+y+')');
+	}
+}
+
+// управляет действиями на карте attackMap
+//   возможно для расчетов нужна будет карта с которой будут вестись атаки (playerMap)
+export class Attack {
+	constructor(attackMap,playerMap){
+		if(!attackMap || !playerMap){
+			console.log('карты игроков attackMap||playerMap не заданы!');
+			return;
+		}
+		this.attackMap = attackMap;
+		this.playerMap = playerMap;
+		
+		let mapSize = attackMap.getMapSize();
+		if(mapSize<10) throw('Размер карты не может быть меньше 10 ячеек');
+		let map = [];
+		for (let i = 0; i < mapSize; i++) {
+			map[i] = [];
+			for (let j = 0; j < mapSize; j++) {
+				map[i][j] = 0;  // 0 - свободна; 1 - соседние ячейки заняты; 2 - занята
+			}
+		}
+		this.map = map;
+		this.mapSize = mapSize;
+	}
+
+	sendAttack(x,y){
+		let map = this.attackMap;
+		map.setDamageToCell(x,y);
+	}
+
 }
 
 //export const PlayerMap = PlayerMap;

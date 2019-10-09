@@ -101,6 +101,7 @@
         <label for="inputYouName">Ваше имя</label>
       </div>
     </div>
+
     <div
       class="col-6"
       in:fly={{ x: 100, delay: 200, duration: 800 }}

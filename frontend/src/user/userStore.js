@@ -4,6 +4,9 @@ let userStore = {
     name: '',
     enemy: '',
     mapSize: 10,
+
+    mapUser: 0,
+    mapEnemy: 0,
 }
 userStore.name = window.localStorage.getItem('user');
 userStore.enemy = window.localStorage.getItem('enemy');
@@ -29,6 +32,16 @@ userStore.setMapSize = function(mapSize) {
 	set(userStore);
 	return this;
 }
+userStore.setMapData = function(mapUser,mapEnemy){
+	console.log("сохраняем данные карты");
+	userStore.mapUser = mapUser;
+	userStore.mapEnemy = mapEnemy;
+	window.localStorage.setItem('mapUser', mapUser);
+	window.localStorage.setItem('mapEnemy', mapEnemy);
+	set(userStore);
+	return this;
+}
+
 
 function createUserStore() {
 	return { subscribe };
