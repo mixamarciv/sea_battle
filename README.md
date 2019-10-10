@@ -1,6 +1,6 @@
 # seabattle
 
-https://mixamarciv.github.io/seabattle/index.html
+https://mixamarciv.github.io/seabattle/index.html - тут можно запустить-посмотреть саму игру
 
 
 Логика игры описана в src/game.js:
