@@ -13,7 +13,7 @@
   }
 
   function onStartGame() {
-    console.log("onStartGame() создаем карту противника");
+    console.log("создаем карту противника");
     enemyMap = new PlayerMap(userMap.getMapSize());
     $userData.setMapData(userMap, enemyMap);
     push("/gameplay");
@@ -42,18 +42,16 @@
     </div>
   </div>
   <div class="row">
-    <div class="col-12">
-      <div
-        class="col-12 py-5"
-        in:fly={{ y: 100, delay: 100, duration: 800 }}
-        out:fade={{ duration: 0 }}>
-        <button
-          class="btn btn-lg btn-primary btn-block"
-          type="submit"
-          on:click={onStartGame}>
-          Начать игру
-        </button>
-      </div>
+    <div
+      class="col-12 py-2"
+      in:fly={{ y: 100, delay: 100, duration: 800 }}
+      out:fade={{ duration: 0 }}>
+      <button
+        class="btn btn-lg btn-success btn-block"
+        type="submit"
+        on:click={onStartGame}>
+        Начать игру
+      </button>
     </div>
   </div>
 </div>

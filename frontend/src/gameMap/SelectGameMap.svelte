@@ -25,7 +25,7 @@
     renderNewMap();
   }
   function renderNewMap() {
-    console.log("renderNewMap()");
+    //console.log("renderNewMap()");
     if (interval && prevMapSize == mapSize) return;
     prevMapSize = mapSize;
     $userData.setMapSize(mapSize);
@@ -53,7 +53,7 @@
         class="btn btn-lg btn-primary btn-block"
         type="submit"
         on:click={onNewMapClick}>
-        создать новую карту
+        расставить корабли случайно
       </button>
     </div>
     <div class="col-6">
@@ -76,7 +76,7 @@
   </div>
   <div class="row">
     <div class="col-12 text-center">
-      <GameMap {map} />
+      <GameMap {map} mapId="map1" isedit="1" />
     </div>
   </div>
 </div>
