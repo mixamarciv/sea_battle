@@ -1,5 +1,5 @@
 <script>
-  import { PlayerMap } from "./gameMap.js";
+  import { PlayerMap } from "../game.js";
   import { fly, fade } from "svelte/transition";
   import { userData } from "../user/userStore.js";
 

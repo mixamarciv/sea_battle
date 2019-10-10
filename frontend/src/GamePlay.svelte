@@ -3,7 +3,7 @@
   import { fly, fade } from "svelte/transition";
   import { push } from "svelte-spa-router";
 
-  import { PlayerMap, GamePlayer, GamePlay } from "./gamemap/gameMap.js";
+  import { PlayerMap, GamePlayer, GamePlay } from "./game.js";
   import GameMap from "./gamemap/GameMap.svelte";
 
   let mapUser = $userData.mapUser;
@@ -16,6 +16,8 @@
   let gamePlay = new GamePlay(mapUser, mapEnemy);
 
   gamePlay.on("startTurn", onTurn);
+  gamePlay.on("message", onMessage);
+  gamePlay.on("win", onHasWinner);
   gamePlay.on("userTurn", () => onTurn(1));
   let turnName = "";
   function onTurn(userOrAi) {
@@ -27,7 +29,30 @@
     gamePlay.userAttack(x, y);
   }
 
-  gamePlay.startGame();
+  let messages = [];
+  function onMessage(msg) {
+    if (messages.length > 100) messages.pop();
+    messages = [msg].concat(messages);
+  }
+
+  let winner = "";
+  let winnern = 0;
+  function onHasWinner(d) {
+    if (d.winner == 1) {
+      winner = $userData.name;
+      turnName = "ПОБЕДА";
+    }
+    if (d.winner == 2) {
+      winner = $userData.enemy;
+      turnName = "ПОРАЖЕНИЕ";
+    }
+    gamePlay.gameMessage("Победитель " + winner);
+  }
+
+  setTimeout(function() {
+    if (!gamePlay.isLoaded()) return;
+    gamePlay.startGame();
+  }, 500);
 </script>
 
 <style>
@@ -35,6 +60,20 @@
     font-family: cursive;
 
     font-size: 20px;
+  }
+  .gamelog {
+    height: 200px;
+    border: 1px solid #a6caff;
+    background: #fefeff;
+    overflow: scroll;
+    overflow-x: hidden;
+    overflow-y: scroll;
+    margin: 0px;
+    padding: 0px;
+  }
+  .gamemessage {
+    border: 1px solid #d9e8ff;
+    margin-top: -1px;
   }
 </style>
 
@@ -86,6 +125,24 @@
         on:onCellClick={onCellClick}
         mapId="mapPlayer1"
         ishidden="1" />
+    </div>
+  </div>
+
+  <div class="row">
+    <div
+      class="col-12 gamelog"
+      in:fly={{ y: 100, delay: 300, duration: 800 }}
+      out:fade={{ duration: 0 }}>
+      {#if messages && messages.length > 0}
+        {#each messages as msg, i (msg.id)}
+          <div class="gamemessage">
+            <span class="msgtime text-muted">
+              <small>[{msg.time}]</small>
+            </span>
+            <span>{msg.text}</span>
+          </div>
+        {/each}
+      {/if}
     </div>
   </div>
 

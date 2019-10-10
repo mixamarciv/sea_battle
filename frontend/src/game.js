@@ -1,6 +1,7 @@
 
-
+import moment from 'moment';
 import eventemitter3 from 'eventemitter3';
+
 
 // возвращает целое число от min включительно до max включительно
 function getRandomInt(min, max) {
@@ -282,9 +283,8 @@ export class PlayerMap extends eventemitter3 {
 		if (n < 0) throw ('Не верно заданы параметры x:' + x + ', y:' + y + '  n<0!! n==' + n);
 		if (n > (sz * sz)) throw ('Не верно заданы параметры x:' + x + ', y:' + y + '  n>(' + (sz * sz) + ')!! n==' + n);
 		let cell = this.map[n];
-		if (!x || !y || !cell) {
-			console.log('map.length==' + this.map.length);
-			throw ('Не верно заданы параметры x:' + x + ', y:' + y + '! n==' + n);
+		if ((!x && x !== 0) || (!y && y !== 0) || !cell) {
+			throw ('Не верно заданы параметры x:' + x + ', y:' + y + '! n==' + n + '  map.length==' + this.map.length);
 		}
 		return cell;
 	}
@@ -460,8 +460,8 @@ export class GamePlayer extends eventemitter3 {
 		let map = this.map;
 		let cnt = 10000;
 		while (cnt-- > 0) {
-			let x = getRandomInt(0, mapSize - 1);
-			let y = getRandomInt(0, mapSize - 1);
+			let x = getRandomInt(0, mapSize);
+			let y = getRandomInt(0, mapSize);
 			if (map[x][y] == 0) return { x, y };
 		}
 		return 0;
@@ -496,8 +496,10 @@ export class GamePlay extends eventemitter3 {
 		super();
 		if (!userMap || !enemyMap) {
 			console.log('карты игроков userMap||enemyMap не заданы!');
+			this.loaded = 0;
 			return;
 		}
+		
 		this.user = new GamePlayer(enemyMap, userMap);
 		this.enemy = new GamePlayer(userMap, enemyMap);
 
@@ -509,8 +511,21 @@ export class GamePlay extends eventemitter3 {
 
 
 		this.turn = getRandomInt(1, 2);  // 1 - user, 2 - enemy
+		let stat = {};
+		stat.msgid = 0;
+		stat.turnCnt = 0;
+		stat.turnCntUser = 0;
+		stat.turnCntEnemy = 0;
+		stat.attackCntUser = 0;
+		stat.attackCntEnemy = 0;
+		this.stat = stat;
+
+		this.winner = 0;
+
+		this.loaded = 1;
 	}
 
+	isLoaded() { return this.loaded; }
 	getTurn() { return this.turn; }
 	getTurnName() {
 		if (this.turn == 1) return 'твой ход';
@@ -518,54 +533,82 @@ export class GamePlay extends eventemitter3 {
 	}
 
 	startGame() {
+		this.gameMessage('Игра началась!');
 		if (this.turn == 1) return this.startTurnUser();
 		if (this.turn == 2) return this.startTurnEnemy();
 	}
 
 	startTurnEnemy() {
+		if(this.winner) return;
 		this.turn = 2;
 		this.emit('startTurn', this.turn);
-		//let pthis = this;
+		let pthis = this;
 		setTimeout(() => {
-			let pos = this.enemy.getAttackPos();
-			this.enemy.sendAttack(pos.x, pos.y);
+			let pos = pthis.enemy.getAttackPos();
+			if (!pos) {
+				this.gameMessage('противнику не удалось найти подходящую точку для атаки!');
+				return;
+			}
+			this.gameMessage('противник атакует клетку ['+pos.x+':'+pos.y+']');
+			pthis.enemy.sendAttack(pos.x, pos.y);
 		}, 300);
 	}
 	endAttackEnemy(success) {
+		this.stat.attackCntEnemy++;
 		if (success) return this.startTurnEnemy();
 		this.endTurnEnemy();
 	}
 	endTurnEnemy() {
+		this.gameMessage('противник закончил атаку');
 		this.emit('endTurn', this.turn);
 		this.startTurnUser();
 	}
 	enemyWin() {
-		let d = { winner: 2 };
+		this.gameMessage('ты проиграл! противник уничтожил все твои корабли');
+		this.winner = 2;
+		let d = { winner: this.winner };
 		this.emit('win', d);
 	}
 
 	startTurnUser() {
+		if(this.winner) return;
+		this.gameMessage('твой ход');
 		this.turn = 1;
 		this.emit('startTurn', this.turn);
 		this.emit('userTurn');
 	}
 	endAttackUser(success) {
+		this.stat.attackCntUser++;
 		if (success) return this.startTurnUser();
 		this.endTurnUser();
 	}
 	endTurnUser() {
+		this.gameMessage('твой ход завершен');
 		this.emit('endTurn', this.turn);
 		this.startTurnEnemy();
 	}
 	userAttack(x, y) {
+		if(this.winner) return;
 		if (this.turn == 1) {
+			this.gameMessage('атакуем клетку противника ['+x+':'+y+']');
 			this.user.sendAttack(x, y);
 		} else {
-			this.emit('message', 'ты не можешь атаковать, дождись своего хода!');
+			this.gameMessage('ты не можешь атаковать, дождись своего хода!');
 		}
 	}
 	userWin() {
-		let d = { winner: 1 };
+		this.gameMessage('Победа! все корабли противника уничтожены');
+		this.winner = 1;
+		let d = { winner: this.winner };
 		this.emit('win', d);
+	}
+
+	gameMessage(msg) {
+		let d = {
+			id: this.stat.msgid++,
+			time: moment().format('HH:mm:ss.SSS'),
+			text: msg,
+		}
+		this.emit('message', d);
 	}
 }

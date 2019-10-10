@@ -2,11 +2,14 @@
   // пример оформления формы взят тут: https://bootstrap-4.ru/docs/4.3.1/examples/floating-labels/
   import { userData } from "./userStore.js";
   import { fly, fade } from "svelte/transition";
+  import { createEventDispatcher } from "svelte";
+  const dispatch = createEventDispatcher();
 
   let inputYouName = $userData.name;
   let inputEnemyName = $userData.enemy;
   function onInputName(event) {
     if (event.which == 13) onSubmitFormLogin(event);
+    dispatch("changeNames", { name: inputYouName, enemy: inputEnemyName });
   }
   async function onSubmitFormLogin(event) {
     event.preventDefault();
@@ -97,7 +100,7 @@
           placeholder="Ваше имя"
           required
           bind:value={inputYouName}
-          on:keydown={onInputName} />
+          on:keyup={onInputName} />
         <label for="inputYouName">Ваше имя</label>
       </div>
     </div>
@@ -114,7 +117,7 @@
           placeholder="Имя противника"
           required
           bind:value={inputEnemyName}
-          on:keydown={onInputName} />
+          on:keyup={onInputName} />
         <label for="inputEnemyName">Имя противника</label>
       </div>
     </div>

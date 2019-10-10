@@ -150,7 +150,7 @@
   <div class="row text-left">
     <div class="col-6 text-left safeShipsText">
       {#if !isedit && shipsInfo && shipsInfo.safeShipsNames}
-        целые корабли: {shipsInfo.cntSafeShips}
+        осталось кораблей: {shipsInfo.cntSafeShips}
         {#each shipsInfo.safeShipsNames as name}
           <div>{name}: {shipsInfo.safeShips[name]}ед.</div>
         {/each}
@@ -158,7 +158,7 @@
     </div>
     <div class="col-6 text-left destroyShipsText">
       {#if !isedit && shipsInfo && shipsInfo.destroyShipsNames}
-        уничтоженные: {shipsInfo.cntDestroyShips}
+        уничтожено: {shipsInfo.cntDestroyShips}
         {#each shipsInfo.destroyShipsNames as name}
           <div>{name}: {shipsInfo.destroyShips[name]}ед.</div>
         {/each}

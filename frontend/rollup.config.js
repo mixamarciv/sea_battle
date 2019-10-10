@@ -9,10 +9,11 @@ import { terser } from 'rollup-plugin-terser';
 import svelte from 'rollup-plugin-svelte';
 import livereload from 'rollup-plugin-livereload';
 import multiEntry from "rollup-plugin-multi-entry";
+import builtins from 'rollup-plugin-node-builtins';
 
-let production = 0;
+let production = 1;
 let expPath = '../clientfiles';
-let otherOpt = { format: 'iife', sourcemap: true, name: 'main'};
+let otherOpt = { format: 'iife', sourcemap: true, name: 'main' };
 
 export default [{
     input: 'src/main.js',
@@ -28,6 +29,7 @@ export default [{
         html(),
         sizeSnapshot(),
         visualizer(),
+        builtins(),
         //!production && livereload(expPath),
         production && terser()
     ],
