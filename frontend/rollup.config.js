@@ -12,7 +12,7 @@ import multiEntry from "rollup-plugin-multi-entry";
 import builtins from 'rollup-plugin-node-builtins';
 
 let production = 1;
-let expPath = '../clientfiles';
+let expPath = '../docs';
 let otherOpt = { format: 'iife', sourcemap: true, name: 'main' };
 
 export default [{
