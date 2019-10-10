@@ -1,1 +1,3 @@
-# sea_battle
+# seabattle
+
+https://mixamarciv.github.io/seabattle/index.html

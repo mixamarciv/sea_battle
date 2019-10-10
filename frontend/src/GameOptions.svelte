@@ -51,13 +51,13 @@
       class="col-12 py-2"
       in:fly={{ y: 100, delay: 100, duration: 800 }}
       out:fade={{ duration: 0 }}>
-      {#if $userData.name == '' || $userData.enemy == ''}
+      {#if !$userData.name || !$userData.enemy}
         <div class="alert alert-danger" role="alert">Укажите имена игроков</div>
       {/if}
       <button
         class="btn btn-lg btn-success btn-block"
         type="submit"
-        disabled={$userData.name == '' || $userData.enemy == ''}
+        disabled={!$userData.name || !$userData.enemy}
         on:click={onStartGame}>
         Начать игру
       </button>
