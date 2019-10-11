@@ -5,6 +5,7 @@
 
   import { PlayerMap, GamePlayer, GamePlay } from "./game.js";
   import GameMap from "./gamemap/GameMap.svelte";
+  import WinnerInfo from "./WinnerInfo.svelte";
 
   let mapUser = $userData.mapUser;
   let mapEnemy = $userData.mapEnemy;
@@ -19,7 +20,7 @@
   gamePlay.on("message", onMessage);
   gamePlay.on("win", onHasWinner);
   gamePlay.on("userTurn", () => onTurn(1));
-  let turnName = "";
+  let turnName = "загрузка..";
   function onTurn(userOrAi) {
     if (userOrAi == 1) turnName = "твой ход";
     else turnName = "ход игрока: " + $userData.enemy;
@@ -35,18 +36,18 @@
     messages = [msg].concat(messages);
   }
 
-  let winner = "";
-  let winnern = 0;
+  let winnerData = 0;
   function onHasWinner(d) {
+    winnerData = d;
     if (d.winner == 1) {
-      winner = $userData.name;
+      winnerData.name = $userData.name;
       turnName = "ПОБЕДА";
     }
     if (d.winner == 2) {
-      winner = $userData.enemy;
+      winnerData.name = $userData.enemy;
       turnName = "ПОРАЖЕНИЕ";
     }
-    gamePlay.gameMessage("Победитель " + winner);
+    gamePlay.gameMessage("Победитель " + winnerData.name);
   }
 
   setTimeout(function() {
@@ -124,7 +125,7 @@
         map={mapEnemy}
         on:onCellClick={onCellClick}
         mapId="mapPlayer1"
-        ishidden="1" />
+        ishidden={1} />
     </div>
   </div>
 
@@ -145,5 +146,8 @@
       {/if}
     </div>
   </div>
-
 </div>
+
+{#if winnerData}
+  <WinnerInfo {winnerData} />
+{/if}

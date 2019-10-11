@@ -513,11 +513,12 @@ export class GamePlay extends eventemitter3 {
 		this.turn = getRandomInt(1, 2);  // 1 - user, 2 - enemy
 		let stat = {};
 		stat.msgid = 0;
-		stat.turnCnt = 0;
 		stat.turnCntUser = 0;
 		stat.turnCntEnemy = 0;
 		stat.attackCntUser = 0;
+		stat.attackSuccessCntUser = 0;
 		stat.attackCntEnemy = 0;
+		stat.attackSuccessCntEnemy = 0;
 		this.stat = stat;
 
 		this.winner = 0;
@@ -527,10 +528,7 @@ export class GamePlay extends eventemitter3 {
 
 	isLoaded() { return this.loaded; }
 	getTurn() { return this.turn; }
-	getTurnName() {
-		if (this.turn == 1) return 'твой ход';
-		return 'ход противника';
-	}
+
 
 	startGame() {
 		this.gameMessage('Игра началась!');
@@ -555,19 +553,33 @@ export class GamePlay extends eventemitter3 {
 	}
 	endAttackEnemy(success) {
 		this.stat.attackCntEnemy++;
-		if (success) return this.startTurnEnemy();
+		if (success){
+			this.stat.attackSuccessCntEnemy++;
+			return this.startTurnEnemy();
+		}
 		this.endTurnEnemy();
 	}
 	endTurnEnemy() {
+		this.stat.turnCntEnemy++;
 		this.gameMessage('противник закончил атаку');
 		this.emit('endTurn', this.turn);
 		this.startTurnUser();
 	}
 	enemyWin() {
-		this.gameMessage('ты проиграл! противник уничтожил все твои корабли');
-		this.winner = 2;
-		let d = { winner: this.winner };
-		this.emit('win', d);
+		let pthis = this;
+		let msg = 'ты проиграл! противник уничтожил все твои корабли';
+		pthis.gameMessage('ты проиграл! противник уничтожил все твои корабли');
+		pthis.winner = 2;
+		setTimeout(function(){
+			let d = { 
+				msg: msg,
+				winner: pthis.winner,
+				attackCnt: pthis.stat.attackCntEnemy,
+				attackSuccess: pthis.stat.attackSuccessCntEnemy,
+				turnCnt: pthis.stat.turnCntEnemy,
+			};
+			pthis.emit('win', d);
+		},100);
 	}
 
 	startTurnUser() {
@@ -579,10 +591,14 @@ export class GamePlay extends eventemitter3 {
 	}
 	endAttackUser(success) {
 		this.stat.attackCntUser++;
-		if (success) return this.startTurnUser();
+		if (success){
+			this.stat.attackSuccessCntUser++;
+			return this.startTurnUser();
+		}
 		this.endTurnUser();
 	}
 	endTurnUser() {
+		this.stat.turnCntUser++;
 		this.gameMessage('твой ход завершен');
 		this.emit('endTurn', this.turn);
 		this.startTurnEnemy();
@@ -597,10 +613,20 @@ export class GamePlay extends eventemitter3 {
 		}
 	}
 	userWin() {
-		this.gameMessage('Победа! все корабли противника уничтожены');
-		this.winner = 1;
-		let d = { winner: this.winner };
-		this.emit('win', d);
+		let pthis = this;
+		let msg = 'Победа! все корабли противника уничтожены';
+		pthis.gameMessage('Победа! все корабли противника уничтожены');
+		pthis.winner = 1;
+		setTimeout(function(){
+			let d = { 
+				msg: msg,
+				winner: pthis.winner,
+				attackCnt: pthis.stat.attackCntUser,
+				attackSuccess: pthis.stat.attackSuccessCntUser,
+				turnCnt: pthis.stat.turnCntUser,
+			};
+			pthis.emit('win', d);
+		},100);
 	}
 
 	gameMessage(msg) {
